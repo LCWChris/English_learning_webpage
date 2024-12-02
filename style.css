@@ -1,60 +1,54 @@
+/* Reset Styles */
 body {
+    margin: 0;
     font-family: Arial, sans-serif;
     line-height: 1.6;
-    margin: 0;
-    padding: 0;
-    background-color: #f9f9f9;
 }
 
-header {
+.navbar {
     background-color: #333;
     color: white;
-    padding: 10px 20px;
-    text-align: center;
-}
-
-.search-filter {
+    padding: 10px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    padding: 15px;
-    background: #f0f0f0;
 }
 
-#search-bar {
-    width: 300px;
-    padding: 10px;
-    margin-right: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+.navbar h1 {
+    margin: 0;
 }
 
-#difficulty {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-main {
+.filters {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
+    gap: 10px;
+}
+
+#difficulty-filter, #search-bar {
+    padding: 5px;
+    font-size: 16px;
+}
+
+/* Blog Layout */
+.blog-container {
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .article {
-    background: white;
-    margin: 15px;
-    padding: 20px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    width: 300px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-footer {
-    text-align: center;
-    background: #333;
-    color: white;
-    padding: 10px;
+.article h2 {
+    margin: 0 0 10px;
+    color: #333;
+}
+
+.article p {
+    margin: 5px 0;
 }

@@ -4,38 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文章推薦系統</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .article { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        .article h2 { margin: 0; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>文章推薦系統</h1>
-    <form method="get" action="/filter">
-        <label for="level">選擇難度級別：</label>
-        <select name="level" id="level">
-            <option value="">全部</option>
-            {% for i in range(7) %}
-            <option value="{{ i }}">Level {{ i }}</option>
-            {% endfor %}
-        </select>
-
-        <label for="theme">輸入主題關鍵字：</label>
-        <input type="text" name="theme" id="theme">
-
-        <button type="submit">篩選</button>
-    </form>
-
-    <div id="articles">
-        {% for article in articles %}
-        <div class="article">
-            <h2>{{ article.Title }}</h2>
-            <p><strong>主題：</strong>{{ article.Theme }}</p>
-            <p><strong>難度：</strong>Level {{ article.Level }}</p>
-            <p>{{ article.Content }}</p>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <h1>文章推薦系統</h1>
+        <div class="filters">
+            <select id="difficulty-filter">
+                <option value="">所有難度</option>
+                <option value="0">Level 0</option>
+                <option value="1">Level 1</option>
+                <option value="2">Level 2</option>
+                <option value="3">Level 3</option>
+                <option value="4">Level 4</option>
+                <option value="5">Level 5</option>
+                <option value="6">Level 6</option>
+            </select>
+            <input type="text" id="search-bar" placeholder="搜尋文章標題...">
         </div>
-        {% endfor %}
-    </div>
+    </nav>
+
+    <!-- Content Section -->
+    <main id="content" class="blog-container">
+        <!-- 文章內容將由 JavaScript 動態插入 -->
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>
