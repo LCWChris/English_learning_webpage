@@ -1,55 +1,49 @@
-// 從 JSON 文件載入文章數據
+// 動態載入 JSON 並渲染文章
 fetch('./articles.json')
-  .then((response) => response.json())
-  .then((data) => {
+  .then(response => response.json())
+  .then(data => {
     const contentDiv = document.getElementById('content');
-    const filterSelect = document.getElementById('difficulty-filter');
-    const searchBar = document.getElementById('search-bar');
+    const filterBtn = document.getElementById('filter-btn');
+    const difficultySelect = document.getElementById('difficulty');
+    const themeInput = document.getElementById('theme');
 
-    // 初始化文章顯示
-    let articles = data;
+    // 初始渲染
+    renderArticles(data);
 
-    function displayArticles(filteredArticles) {
-        contentDiv.innerHTML = ''; // 清空內容
-        filteredArticles.forEach((article) => {
-            const articleDiv = document.createElement('div');
-            articleDiv.classList.add('article');
-            articleDiv.innerHTML = `
-                <h2>${article.Title}</h2>
-                <p><strong>主題:</strong> ${article.Theme}</p>
-                <p>${article['level 0 content'] || article['level 1 content'] || 
-                     article['level 2 content'] || article['level 3 content'] || 
-                     article['level 4 content'] || article['level 5 content'] || 
-                     article['level 6 content']}</p>
-            `;
-            contentDiv.appendChild(articleDiv);
-        });
+    // 點擊篩選按鈕
+    filterBtn.addEventListener('click', () => {
+      const selectedDifficulty = difficultySelect.value;
+      const themeKeyword = themeInput.value.toLowerCase();
+
+      // 篩選文章
+      const filteredArticles = data.filter(article => {
+        const matchesDifficulty =
+          selectedDifficulty === 'all' || article.Level.toString() === selectedDifficulty;
+        const matchesTheme = article.Theme.toLowerCase().includes(themeKeyword);
+        return matchesDifficulty && matchesTheme;
+      });
+
+      renderArticles(filteredArticles);
+    });
+
+    // 渲染文章函式
+    function renderArticles(articles) {
+      contentDiv.innerHTML = '';
+      if (articles.length === 0) {
+        contentDiv.innerHTML = '<p>未找到符合條件的文章。</p>';
+        return;
+      }
+      articles.forEach(article => {
+        const articleDiv = document.createElement('div');
+        articleDiv.classList.add('article');
+        articleDiv.innerHTML = `
+          <h2>${article.Title}</h2>
+          <p><strong>主題：</strong>${article.Theme}</p>
+          <p><strong>難度：</strong>Level ${article.Level}</p>
+          <p>${article.Content}</p>
+        `;
+        contentDiv.appendChild(articleDiv);
+      });
     }
-
-    // 首次顯示所有文章
-    displayArticles(articles);
-
-    // 篩選功能
-    filterSelect.addEventListener('change', () => {
-        const selectedLevel = filterSelect.value;
-        const filteredArticles = articles.filter((article) => {
-            const levels = [
-                'level 0 content', 'level 1 content', 'level 2 content',
-                'level 3 content', 'level 4 content', 'level 5 content', 'level 6 content'
-            ];
-            if (selectedLevel === '') return true;
-            return article[`level ${selectedLevel} content`];
-        });
-        displayArticles(filteredArticles);
-    });
-
-    // 搜尋功能
-    searchBar.addEventListener('input', () => {
-        const query = searchBar.value.toLowerCase();
-        const filteredArticles = articles.filter((article) => {
-            return article.Title.toLowerCase().includes(query);
-        });
-        displayArticles(filteredArticles);
-    });
   })
-  .catch((error) => console.error('Error loading articles:', error));
+  .catch(err => console.error('Error loading articles:', err));

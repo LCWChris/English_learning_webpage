@@ -1,52 +1,40 @@
-/* Reset Styles */
 body {
-    margin: 0;
     font-family: Arial, sans-serif;
     line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background: #f4f4f4;
+    color: #333;
 }
 
-.navbar {
-    background-color: #333;
-    color: white;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+header {
+    background: #333;
+    color: #fff;
+    padding: 10px 20px;
 }
 
-.navbar h1 {
+header h1 {
     margin: 0;
 }
 
-.filters {
-    display: flex;
-    gap: 10px;
+header div {
+    margin-top: 10px;
 }
 
-#difficulty-filter, #search-bar {
-    padding: 5px;
-    font-size: 16px;
-}
-
-/* Blog Layout */
-.blog-container {
+#content {
     padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
 }
 
 .article {
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    background: #fff;
+    margin: 20px 0;
     padding: 15px;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .article h2 {
     margin: 0 0 10px;
-    color: #333;
 }
 
 .article p {

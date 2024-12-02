@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,29 +7,24 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
+    <header>
         <h1>文章推薦系統</h1>
-        <div class="filters">
-            <select id="difficulty-filter">
-                <option value="">所有難度</option>
+        <div>
+            <label for="difficulty">選擇難度級別：</label>
+            <select id="difficulty">
+                <option value="all">全部</option>
                 <option value="0">Level 0</option>
                 <option value="1">Level 1</option>
                 <option value="2">Level 2</option>
-                <option value="3">Level 3</option>
-                <option value="4">Level 4</option>
-                <option value="5">Level 5</option>
-                <option value="6">Level 6</option>
             </select>
-            <input type="text" id="search-bar" placeholder="搜尋文章標題...">
+            <label for="theme">輸入主題關鍵字：</label>
+            <input type="text" id="theme" placeholder="輸入關鍵字">
+            <button id="filter-btn">篩選</button>
         </div>
-    </nav>
-
-    <!-- Content Section -->
-    <main id="content" class="blog-container">
-        <!-- 文章內容將由 JavaScript 動態插入 -->
+    </header>
+    <main id="content">
+        <!-- 文章將動態插入這裡 -->
     </main>
-
     <script src="script.js"></script>
 </body>
 </html>
