@@ -41,15 +41,24 @@ function renderArticles(filteredArticles) {
 
 // 篩選與搜尋的函式
 function filterArticles() {
-    const difficulty = document.getElementById('difficulty').value;
-    const themeKeyword = document.getElementById('theme').value.toLowerCase();
+    const difficulty = document.getElementById('difficulty').value; // 難度篩選條件
+    const themeKeyword = document.getElementById('theme').value.trim().toLowerCase(); // 去除多餘空格並轉為小寫
 
+    // 篩選文章
     const filteredArticles = articles.filter(article => {
+        // 比對難度：選擇"全部" (all) 或符合指定的難度
         const matchDifficulty = difficulty === "all" || article.Level.toString() === difficulty;
-        const matchTheme = themeKeyword === "" || article.Theme.toLowerCase().includes(themeKeyword);
+
+        // 比對主題：若無輸入關鍵字，則自動匹配；若有關鍵字，檢查是否包含於 Title 或 Theme
+        const matchTheme = themeKeyword === "" || 
+                           article.Theme.toLowerCase().includes(themeKeyword) || 
+                           article.Title.toLowerCase().includes(themeKeyword);
+
+        // 同時滿足兩個條件
         return matchDifficulty && matchTheme;
     });
 
+    // 渲染篩選結果
     renderArticles(filteredArticles);
 }
 
