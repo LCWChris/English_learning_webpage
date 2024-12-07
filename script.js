@@ -42,7 +42,7 @@ function renderArticles(filteredArticles) {
             <button class="download-btn" onclick="downloadArticle('${article.Title}', \`${fileContent}\`)">下載文章</button>
         `;
 
-        // 创建文章 HTML
+        // 創建文章 HTML
         const articleHTML = `
             <div class="article">
                 <h2>${article.Title}</h2>
@@ -50,7 +50,7 @@ function renderArticles(filteredArticles) {
                 <p><strong>日期:</strong> ${article.Date}</p>
                 <p><strong>難度:</strong> Level ${article.Level}</p>
                 <p>${article.Content}</p>
-                ${downloadButton}
+                <button class="download-btn" onclick="downloadArticle('${article.Title}', \`${fileContent}\`)">下載文章</button>
             </div>
         `;
         container.innerHTML += articleHTML;
