@@ -16,7 +16,7 @@ fetch('articles.json')
         console.error('載入文章資料時發生錯誤:', error);
     });
 
-// 渲染文章的函式
+// 渲染文章的函数
 function renderArticles(filteredArticles) {
     const container = document.getElementById('articles-container');
     if (!container) {
@@ -24,8 +24,25 @@ function renderArticles(filteredArticles) {
         return;
     }
 
-    container.innerHTML = ''; // 清空舊內容
+    container.innerHTML = ''; // 清空旧内容
     filteredArticles.forEach(article => {
+        // 创建下载文件的内容
+        const fileContent = `
+            Title: ${article.Title}
+            Theme: ${article.Theme}
+            Date: ${article.Date}
+            Difficulty Level: ${article.Level}
+            
+            Content:
+            ${article.Content}
+        `.trim();
+
+        // 生成下载按钮
+        const downloadButton = `
+            <button class="download-btn" onclick="downloadArticle('${article.Title}', \`${fileContent}\`)">下載文章</button>
+        `;
+
+        // 创建文章 HTML
         const articleHTML = `
             <div class="article">
                 <h2>${article.Title}</h2>
@@ -33,10 +50,21 @@ function renderArticles(filteredArticles) {
                 <p><strong>日期:</strong> ${article.Date}</p>
                 <p><strong>難度:</strong> Level ${article.Level}</p>
                 <p>${article.Content}</p>
+                ${downloadButton}
             </div>
         `;
         container.innerHTML += articleHTML;
     });
+}
+// 下载文章的函数
+function downloadArticle(title, content) {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${title}.txt`; // 文件名为文章标题
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // 篩選與搜尋的函式
