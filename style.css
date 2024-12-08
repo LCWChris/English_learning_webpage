@@ -1,54 +1,107 @@
 body {
     font-family: Arial, sans-serif;
-    line-height: 1.6;
     margin: 0;
     padding: 0;
-    background: #f4f4f4;
-    color: #333;
+    background-color: #f8f9fa;
 }
 
 header {
-    background: #333;
-    color: #fff;
+    background-color: #343a40;
+    color: white;
+    display: flex;
+    align-items: center;
     padding: 10px 20px;
 }
 
+header img {
+    height: 50px;
+    margin-right: 15px;
+}
+
 header h1 {
+    font-size: 1.5em;
     margin: 0;
 }
 
-header div {
-    margin-top: 10px;
+.filter-container {
+    background-color: #ffffff;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#content {
-    padding: 20px;
-}
-
-.article {
-    background: #fff;
-    margin: 20px 0;
-    padding: 15px;
+.filter-container select, .filter-container input, .filter-container button {
+    padding: 10px;
+    font-size: 1em;
+    margin-right: 10px;
+    border: 1px solid #ccc;
     border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
-.article h2 {
-    margin: 0 0 10px;
-}
-
-.article p {
-    margin: 5px 0;
-}
-.download-btn {
+.filter-container button {
     background-color: #007bff;
     color: white;
     border: none;
-    padding: 8px 12px;
-    margin-top: 10px;
-    border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+}
+
+.filter-container button:hover {
+    background-color: #0056b3;
+}
+
+.article-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.article-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.article-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.article-content {
+    padding: 15px;
+}
+
+.article-content h2 {
+    font-size: 1.2em;
+    margin: 0 0 10px;
+    color: #343a40;
+}
+
+.article-content p {
+    margin: 5px 0;
+    color: #6c757d;
+}
+
+.article-content .article-level {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.download-btn {
+    margin-top: auto;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
 }
 
 .download-btn:hover {
