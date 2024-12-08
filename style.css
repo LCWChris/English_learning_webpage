@@ -2,108 +2,73 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f8f9fa;
+    background-color: #f5f5f5; /* 恢復為簡單的背景顏色 */
 }
 
 header {
-    background-color: #343a40;
+    background-color: #333;
     color: white;
-    display: flex;
-    align-items: center;
-    padding: 10px 20px;
-}
-
-header img {
-    height: 50px;
-    margin-right: 15px;
+    padding: 10px 0;
+    text-align: center;
 }
 
 header h1 {
-    font-size: 1.5em;
     margin: 0;
+    font-size: 24px;
 }
 
-.filter-container {
-    background-color: #ffffff;
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.filter-container select, .filter-container input, .filter-container button {
-    padding: 10px;
-    font-size: 1em;
-    margin-right: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-.filter-container button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-.filter-container button:hover {
-    background-color: #0056b3;
-}
-
-.article-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+.container {
+    margin: 20px auto;
+    width: 80%;
+    max-width: 1200px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
 }
 
-.article-card {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+.article {
+    border-bottom: 1px solid #ddd;
+    padding: 20px 0;
 }
 
-.article-image {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
+.article:last-child {
+    border-bottom: none;
 }
 
-.article-content {
-    padding: 15px;
-}
-
-.article-content h2 {
-    font-size: 1.2em;
+.article h2 {
     margin: 0 0 10px;
-    color: #343a40;
+    font-size: 20px;
+    color: #333;
 }
 
-.article-content p {
-    margin: 5px 0;
-    color: #6c757d;
-}
-
-.article-content .article-level {
-    font-weight: bold;
-    color: #007bff;
+.article p {
+    margin: 0;
+    line-height: 1.5;
+    color: #555;
 }
 
 .download-btn {
-    margin-top: auto;
-    padding: 10px;
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 10px;
     background-color: #007bff;
     color: white;
-    text-align: center;
     text-decoration: none;
-    border: none;
-    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
 }
 
 .download-btn:hover {
     background-color: #0056b3;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #333;
+    color: white;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
 }
