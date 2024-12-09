@@ -13,7 +13,7 @@ header {
     display: flex; /* 使用 Flexbox 佈局 */
     align-items: center; /* 垂直置中 */
     justify-content: space-between; /* 左右分散佈局 */
-    padding: 10px 20px; /* 四周邊距讓內容更美觀 */
+    padding: 20px 40px; /* 增加上下和左右邊距，讓 header 更厚、更寬 */
 }
 
 header h1 {
@@ -39,7 +39,7 @@ main#content {
 }
 
 #articles-container .article {
-    margin-bottom: 20px; /* 每篇文章的下方間距 */
+    margin: 20px 40px; /* 為每篇文章的左右預留更多空間，增加視覺間距 */
     padding: 20px; /* 文章內部的間距 */
     border: 2px solid #ccc; /* 外框顏色 */
     border-radius: 8px; /* 邊角圓滑 */
