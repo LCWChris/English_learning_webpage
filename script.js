@@ -2,7 +2,7 @@
 let data = [];
 
 // 從 JSON 加載報導內容
-fetch('articles_v2.json')
+fetch('articles.json')
     .then(response => response.json())
     .then(articles => {
         data = articles;
