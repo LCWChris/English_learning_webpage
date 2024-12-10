@@ -3,7 +3,7 @@ import json
 
 # 定義輸入與輸出檔案名稱
 csv_file = "merged_combined_levels.csv"  # 請替換為您的 CSV 檔案名稱
-output_json = "articles_v2.json"  # 請替換為您希望輸出的 JSON 檔案名稱
+output_json = "articles.json"  # 請替換為您希望輸出的 JSON 檔案名稱
 
 # 讀取 CSV 檔案
 try:
