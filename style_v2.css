@@ -1,0 +1,73 @@
+/* 全域樣式 */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+
+/* 頁首樣式 */
+header {
+    background-color: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+header div {
+    text-align: right;
+}
+
+header div label, header div select, header div input, header div button {
+    margin-left: 10px;
+}
+
+/* 主要內容區域 */
+main#content {
+    margin: 20px;
+}
+
+#articles-container .article {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 按鈕樣式 */
+.level-btn, .download-btn {
+    padding: 8px 16px;
+    margin-right: 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* 滑過效果 */
+.level-btn:hover, .download-btn:hover {
+    background-color: #0056b3;
+}
+
+/* 按鈕容器 */
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.level-buttons {
+    display: flex;
+}
