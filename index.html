@@ -27,13 +27,7 @@
             <select id="theme-filter">
                 <option value="all">All</option>
             </select>
-        <!--
-            <label for="start-date">Start Date：</label>
-            <input type="date" id="start-date">
 
-            <label for="end-date">End Date：</label>
-            <input type="date" id="end-date">
-        -->
             <label for="theme">Keyword Search：</label>
             <input type="text" id="theme" placeholder="Keyword">
             <button id="filter-btn">Submit</button>
@@ -43,6 +37,8 @@
         <div id="articles-container">
             <!-- 文章將動態插入這裡 -->
         </div>
+        <!-- 加入頁碼容器 -->
+        <div id="pagination-container"></div>
     </main>
     <script src="script.js"></script>
 </body>

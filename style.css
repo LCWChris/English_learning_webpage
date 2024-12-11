@@ -71,3 +71,29 @@ main#content {
 .level-buttons {
     display: flex;
 }
+
+
+/* 頁碼按鈕樣式 */
+#pagination-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.pagination-btn {
+    padding: 8px 16px;
+    margin: 0 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.pagination-btn.active {
+    background-color: #0056b3;
+}
+
+.pagination-btn:hover {
+    background-color: #0056b3;
+}
