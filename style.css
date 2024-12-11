@@ -71,6 +71,7 @@ main#content {
 .level-buttons {
     display: flex;
 }
+
 /* 新增圖示按鈕樣式 */
 .icon-btn {
     background-color: #4CAF50; /* 按鈕背景顏色 */
@@ -93,8 +94,9 @@ main#content {
 }
 
 .icon-btn .icon {
-    width: 24px; /* 圖示大小 */
-    height: 24px;
+    max-width: 24px; /* 設定圖示的最大寬度 */
+    max-height: 24px; /* 設定圖示的最大高度 */
+    object-fit: contain; /* 保持圖示比例 */
     margin-right: 8px; /* 圖示與文字之間的間距 */
 }
 
