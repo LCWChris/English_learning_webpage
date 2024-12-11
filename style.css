@@ -71,39 +71,3 @@ main#content {
 .level-buttons {
     display: flex;
 }
-
-/* 新增圖示按鈕樣式 */
-.icon-btn {
-    background-color: #4CAF50; /* 按鈕背景顏色 */
-    border: none;
-    border-radius: 50%;
-    padding: 15px;
-    cursor: pointer;
-    font-size: 16px;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s ease;
-    margin-right: 10px; /* 讓圖示按鈕與其他按鈕保持間隔 */
-}
-
-/* 圖示按鈕滑過效果 */
-.icon-btn:hover {
-    background-color: #45a049;
-}
-
-.icon-btn .icon {
-    max-width: 24px; /* 設定圖示的最大寬度 */
-    max-height: 24px; /* 設定圖示的最大高度 */
-    object-fit: contain; /* 保持圖示比例 */
-    margin-right: 8px; /* 圖示與文字之間的間距 */
-}
-
-/* 按鈕容器的對齊 */
-.controls {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-top: 10px;
-}
