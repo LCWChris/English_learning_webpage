@@ -258,7 +258,19 @@ function addToViewingHistory(article) {
 document.addEventListener("DOMContentLoaded", () => {
     viewingHistory = loadViewingHistory();
     console.log("載入的瀏覽紀錄:", viewingHistory);
+
+    // 監聽輸入框的 Enter 鍵事件
+    const searchInput = document.getElementById("keyword-input"); // 確保輸入框有 id="keyword-input"
+    if (searchInput) {
+        searchInput.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // 防止預設行為
+                document.getElementById("filter-btn").click(); // 觸發 Submit 按鈕點擊事件
+            }
+        });
+    }
 });
+
 
 function populateThemeFilter(articles) {
     const themeFilter = document.getElementById("theme-filter");
@@ -290,30 +302,36 @@ function sortAndRenderArticlesByTitleAndDate(articles) {
 }
 
 function searchArticles() {
+    const searchInput = document.getElementById("keyword-input");
+    const searchKeyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
     const selectedLevel = document.getElementById("difficulty").value;
     const selectedTheme = document.getElementById("theme-filter").value.toLowerCase();
-    const keyword = document.getElementById("theme").value.toLowerCase().trim();
     const dataSource = document.getElementById("data-source").value;
 
     const sourceData = dataSource === "history" ? viewingHistory : data;
 
     searchResults = sourceData.filter(article => {
+        // 比對等級
         const levelKeys = Object.keys(article.Content).map(level => level.match(/\d+/)[0]);
         const levelMatch = selectedLevel === "all" || levelKeys.includes(selectedLevel);
 
+        // 比對主題
         const themeMatch = selectedTheme === "all" || article.Themes.some(t => t.toLowerCase() === selectedTheme);
 
-        const titleMatch = article.Title.toLowerCase().includes(keyword);
-        const contentMatch = Object.values(article.Content)
-            .some(content => content.toLowerCase().includes(keyword));
+        // 比對標題與內容 (若有輸入關鍵字才篩選)
+        const titleMatch = searchKeyword === "" || article.Title.toLowerCase().includes(searchKeyword);
+        const contentMatch = searchKeyword === "" || Object.values(article.Content).some(content => content.toLowerCase().includes(searchKeyword));
 
         return levelMatch && themeMatch && (titleMatch || contentMatch);
     });
 
+    // 重置分頁與渲染結果
     currentPage = 1;
     sortAndRenderArticlesByTitleAndDate(searchResults);
     createPaginationControls(searchResults.length, currentPage);
 }
+
 
 document.getElementById("filter-btn").addEventListener("click", searchArticles);
 
@@ -492,9 +510,21 @@ function saveRating(title, level, themes, rating) {
 
     if (existingIndex !== -1) {
         storedData[existingIndex] = ratingData;
+        console.log(`更新評分：${title} (Level ${level}) -> ${rating} 星`);
     } else {
         storedData.push(ratingData);
+        console.log(`新增評分：${title} (Level ${level}) -> ${rating} 星`);
     }
 
     localStorage.setItem("ratings", JSON.stringify(storedData));
+    console.log("目前儲存的評分資料：", storedData);
+}
+
+
+function updateStars(ratingContainer, selectedRating) {
+    const allStars = ratingContainer.querySelectorAll(".star");
+    allStars.forEach((star) => {
+        const value = parseInt(star.dataset.value, 10);
+        star.style.color = value <= selectedRating ? "gold" : "gray";
+    });
 }
