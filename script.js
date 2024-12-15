@@ -75,28 +75,31 @@ fetch('articles.json')
         populateThemeFilter(articles);  // 初始化主題選單
 
         const ratings = loadRatings();
+        let articlesToDisplay;
+
         if (ratings.length === 0) {
-            // 沒有評分資料，顯示隨機報導
-            const randomArticles = getRandomArticles(articles, articlesPerPage);
-            sortAndRenderArticlesByTitleAndDate(randomArticles);
+            console.log("無評分資料，顯示隨機報導。");
+            articlesToDisplay = getRandomArticles(articles, articlesPerPage);
         } else {
-            // 有評分資料，顯示推薦報導
             const recommendedArticles = recommendArticles();
-            const matchedArticles = data.filter(article =>
+            articlesToDisplay = data.filter(article =>
                 recommendedArticles.some(rec => rec.title === article.Title)
             );
-            if (matchedArticles.length > 0) {
-                sortAndRenderArticlesByTitleAndDate(matchedArticles.slice(0, articlesPerPage));
-            } else {
-                const randomArticles = getRandomArticles(articles, articlesPerPage);
-                sortAndRenderArticlesByTitleAndDate(randomArticles);
+
+            if (articlesToDisplay.length === 0) {
+                console.log("無推薦結果，顯示隨機報導。");
+                articlesToDisplay = getRandomArticles(articles, articlesPerPage);
             }
         }
+
+        console.log("加載的報導:", articlesToDisplay);
+        sortAndRenderArticlesByTitleAndDate(articlesToDisplay);
     })
     .catch(error => {
         console.error("Error loading articles:", error);
         document.getElementById("articles-container").innerHTML = `<p style="color: red;">Failed to load articles. Please try again later.</p>`;
     });
+
 
 function renderArticle(article) {
     const container = document.getElementById("articles-container");
