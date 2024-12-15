@@ -43,21 +43,19 @@ main#content {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* 按鈕樣式 */
-.level-btn, .download-btn {
-    padding: 8px 16px;
-    margin-right: 5px;
-    background-color: #007bff;
+.level-btn {
+    display: inline-block;
+    margin: 5px;
+    padding: 10px 15px;
+    background: #007bff;
     color: white;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
 /* 滑過效果 */
-.level-btn:hover, .download-btn:hover {
-    background-color: #0056b3;
+.level-btn:hover {
+    background: #0056b3;
 }
 
 /* 按鈕容器 */
@@ -70,30 +68,64 @@ main#content {
 
 .level-buttons {
     display: flex;
+    align-items: center;
+    justify-content: flex-start; /* 按鈕從左側開始排列 */
+    gap: 10px; /* 按鈕之間的間距 */
+    position: relative; /* 為下載按鈕定位 */
 }
 
+.download-btn:hover {
+    background: #218838;
+}
+
+.download-btn {
+    padding: 10px 15px;
+    background: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-left: auto; /* 讓下載按鈕靠右對齊 */
+}
 
 /* 頁碼按鈕樣式 */
 #pagination-container {
-    text-align: center;
+    display: flex;
+    gap: 5px;
+    justify-content: center;
     margin-top: 20px;
 }
 
 .pagination-btn {
-    padding: 8px 16px;
-    margin: 0 5px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
 .pagination-btn.active {
-    background-color: #0056b3;
+    background: #007bff;
+    color: white;
+    font-weight: bold;
 }
 
 .pagination-btn:hover {
     background-color: #0056b3;
+}
+
+/* 星級評分樣式 */
+.rating-container {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rating-container .star {
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.rating-container .star:hover {
+    color: gold;
 }

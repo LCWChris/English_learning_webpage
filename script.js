@@ -1,18 +1,265 @@
 let data = [];
 let currentPage = 1;
 const articlesPerPage = 10;
+let viewingHistory = loadViewingHistory();
+let searchResults = [];  // 儲存搜尋結果
+
+function renderPagination(totalPages) {
+    const paginationContainer = document.getElementById("pagination-container");
+    paginationContainer.innerHTML = ""; // 清空現有分頁按鈕
+
+    if (totalPages <= 1) {
+        return; // 無需分頁
+    }
+
+    // 建立上一頁按鈕
+    const prevButton = document.createElement("button");
+    prevButton.textContent = "Previous";
+    prevButton.disabled = currentPage === 1;
+    prevButton.addEventListener("click", () => {
+        if (currentPage > 1) {
+            currentPage--;
+            paginateArticles(searchResults, currentPage);
+        }
+    });
+
+    paginationContainer.appendChild(prevButton);
+
+    // 建立分頁按鈕
+    for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement("button");
+        pageButton.textContent = i;
+        pageButton.classList.add("pagination-btn");
+        if (i === currentPage) {
+            pageButton.classList.add("active");
+        }
+        pageButton.addEventListener("click", () => {
+            currentPage = i;
+            paginateArticles(searchResults, currentPage);
+        });
+
+        paginationContainer.appendChild(pageButton);
+    }
+
+    // 建立下一頁按鈕
+    const nextButton = document.createElement("button");
+    nextButton.textContent = "Next";
+    nextButton.disabled = currentPage === totalPages;
+    nextButton.addEventListener("click", () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            paginateArticles(searchResults, currentPage);
+        }
+    });
+
+    paginationContainer.appendChild(nextButton);
+}
+
+
+
+function loadRatings() {
+    return JSON.parse(localStorage.getItem("ratings")) || [];
+}
+
 
 // 從 JSON 加載報導內容
 fetch('articles.json')
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(articles => {
         data = articles;
         populateThemeFilter(articles);  // 初始化主題選單
-        const randomArticles = getRandomArticles(articles, articlesPerPage);  // 隨機選擇10篇文章
-        sortAndRenderArticlesByDate(randomArticles);  // 初次載入按時間排序
+
+        const ratings = loadRatings();
+        if (ratings.length === 0) {
+            // 沒有評分資料，顯示隨機報導
+            const randomArticles = getRandomArticles(articles, articlesPerPage);
+            sortAndRenderArticlesByTitleAndDate(randomArticles);
+        } else {
+            // 有評分資料，顯示推薦報導
+            const recommendedArticles = recommendArticles();
+            const matchedArticles = data.filter(article =>
+                recommendedArticles.some(rec => rec.title === article.Title)
+            );
+            if (matchedArticles.length > 0) {
+                sortAndRenderArticlesByTitleAndDate(matchedArticles.slice(0, articlesPerPage));
+            } else {
+                const randomArticles = getRandomArticles(articles, articlesPerPage);
+                sortAndRenderArticlesByTitleAndDate(randomArticles);
+            }
+        }
+    })
+    .catch(error => {
+        console.error("Error loading articles:", error);
+        document.getElementById("articles-container").innerHTML = `<p style="color: red;">Failed to load articles. Please try again later.</p>`;
     });
 
-// 生成主題選單
+function renderArticle(article) {
+    const container = document.getElementById("articles-container");
+
+    if (!article.Content || Object.keys(article.Content).length === 0) {
+        console.warn(`報導 "${article.Title}" 缺少內容`);
+        return;  // 中止渲染
+    }
+
+    const articleElement = document.createElement("div");
+    articleElement.classList.add("article");
+
+    const contentLevels = Object.keys(article.Content)
+        .filter(level => level.toLowerCase().includes("level"))
+        .sort((a, b) => parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]));
+
+    console.log(`報導 "${article.Title}" 可用等級:`, contentLevels);
+
+    let currentLevel = contentLevels[0];
+    const themes = article.Themes ? article.Themes.join(", ") : "No Theme";
+
+    // 處理報導標題作為安全選擇器
+    const escapedTitle = article.Title.replace(/[^a-zA-Z0-9]/g, "_");
+
+    articleElement.innerHTML = `
+        <h2 class="title">${article.Title}</h2>
+        <p class="date"><strong>Date:</strong> ${article.Date}</p>
+        <p class="theme"><strong>Theme:</strong> ${themes}</p>
+        <p class="current-level" id="current-level-${escapedTitle}"><strong>Current Level:</strong> ${currentLevel.match(/\d+/)[0]}</p>
+        <div class="content" id="content-${escapedTitle}">
+            <p>${article.Content[currentLevel] || "Content not available"}</p>
+        </div>
+        <div class="level-buttons" id="buttons-${escapedTitle}"></div>
+    `;
+
+    const contentContainer = articleElement.querySelector(`#content-${escapedTitle}`);
+    const levelDisplay = articleElement.querySelector(`#current-level-${escapedTitle}`);
+    const buttonsContainer = articleElement.querySelector(`#buttons-${escapedTitle}`);
+
+    if (buttonsContainer && contentLevels.length > 0) {
+        console.log(`找到按鈕容器，準備生成等級按鈕:`, contentLevels);
+
+        contentLevels.forEach(level => {
+            console.log(`正在處理等級: ${level} - 報導標題: ${article.Title}`);
+
+            const levelButton = document.createElement("button");
+            const levelNumber = level.match(/\d+/)[0];
+            levelButton.textContent = `Level ${levelNumber}`;
+            levelButton.classList.add("level-btn");
+
+            levelButton.addEventListener("click", () => {
+                const selectedContent = article.Content[level] || "Content not available";
+                contentContainer.innerHTML = `<p>${selectedContent}</p>`;
+                levelDisplay.innerHTML = `<strong>Current Level:</strong> ${levelNumber}`;
+                currentLevel = level;
+            });
+
+            buttonsContainer.appendChild(levelButton);
+            console.log(`已附加按鈕: ${levelButton.textContent}`);
+        });
+
+        // 添加下載按鈕
+        const downloadButton = document.createElement("button");
+        downloadButton.textContent = "Download";
+        downloadButton.classList.add("download-btn");
+        downloadButton.id = `download-${escapedTitle}`;
+
+        downloadButton.addEventListener("click", () => {
+            const currentContent = article.Content[currentLevel] || "Content not available";
+            const txtContent = `
+Title: ${article.Title}
+Date: ${article.Date}
+Theme: ${themes}
+Current Level: ${currentLevel.match(/\d+/)[0]}
+Content:
+${currentContent}
+            `.trim();
+
+            // 建立 Blob 物件並觸發下載
+            const blob = new Blob([txtContent], { type: "text/plain" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `${article.Title.replace(/[^a-zA-Z0-9]/g, "_")}_Level${currentLevel.match(/\d+/)[0]}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        buttonsContainer.appendChild(downloadButton);
+    } else {
+        console.warn(`報導 "${article.Title}" 沒有等級內容或按鈕容器未找到`);
+    }
+
+    // 星級評分區域
+    const ratingContainer = document.createElement("div");
+    ratingContainer.classList.add("rating-container");
+    ratingContainer.id = `rating-${escapedTitle}`;
+
+    let selectedRating = loadRating(article.Title, currentLevel) || 0;
+    const ratingResult = document.createElement("p");
+    ratingResult.id = `rating-result-${escapedTitle}`;
+    ratingResult.textContent = selectedRating > 0 ? `You rated: ${selectedRating} stars.` : "No rating yet.";
+    ratingContainer.appendChild(ratingResult);
+
+    for (let i = 1; i <= 5; i++) {
+        const star = document.createElement("span");
+        star.textContent = "★";
+        star.classList.add("star");
+        star.dataset.value = i;
+
+        star.addEventListener("click", () => {
+            selectedRating = i;
+            updateStars();
+            ratingResult.textContent = `You rated: ${i} stars.`;
+            saveRating(article.Title, currentLevel, themes, i);
+        });
+
+        ratingContainer.appendChild(star);
+    }
+
+    function updateStars() {
+        const allStars = ratingContainer.querySelectorAll(".star");
+        allStars.forEach((star) => {
+            const value = parseInt(star.dataset.value, 10);
+            star.style.color = value <= selectedRating ? "gold" : "gray";
+        });
+    }
+
+    updateStars();
+    buttonsContainer.after(ratingContainer);
+    container.appendChild(articleElement);
+    addToViewingHistory(article);
+}
+
+
+
+function loadViewingHistory() {
+    const savedHistory = JSON.parse(localStorage.getItem("viewingHistory")) || [];
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+    // 過濾三天內的紀錄
+    return savedHistory.filter(article => new Date(article.viewedAt) >= threeDaysAgo);
+}
+
+function saveViewingHistory() {
+    localStorage.setItem("viewingHistory", JSON.stringify(viewingHistory));
+}
+
+function addToViewingHistory(article) {
+    if (!viewingHistory.some(item => item.Title === article.Title && item.Date === article.Date)) {
+        article.viewedAt = new Date().toISOString();
+        viewingHistory.push(article);
+        console.log(`已加入瀏覽紀錄: ${article.Title}`);
+        saveViewingHistory();
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    viewingHistory = loadViewingHistory();
+    console.log("載入的瀏覽紀錄:", viewingHistory);
+});
+
 function populateThemeFilter(articles) {
     const themeFilter = document.getElementById("theme-filter");
     const uniqueThemes = new Set();
@@ -31,13 +278,26 @@ function populateThemeFilter(articles) {
     });
 }
 
-// 搜尋文章
+function sortAndRenderArticlesByTitleAndDate(articles) {
+    const sortedArticles = articles.sort((a, b) => {
+        const titleComparison = a.Title.localeCompare(b.Title);
+        if (titleComparison !== 0) {
+            return titleComparison;  // 按標題排序 (A-Z)
+        }
+        return new Date(b.Date) - new Date(a.Date);  // 時間從新到舊
+    });
+    paginateArticles(sortedArticles, currentPage);
+}
+
 function searchArticles() {
     const selectedLevel = document.getElementById("difficulty").value;
     const selectedTheme = document.getElementById("theme-filter").value.toLowerCase();
     const keyword = document.getElementById("theme").value.toLowerCase().trim();
+    const dataSource = document.getElementById("data-source").value;
 
-    const filteredData = data.filter(article => {
+    const sourceData = dataSource === "history" ? viewingHistory : data;
+
+    searchResults = sourceData.filter(article => {
         const levelKeys = Object.keys(article.Content).map(level => level.match(/\d+/)[0]);
         const levelMatch = selectedLevel === "all" || levelKeys.includes(selectedLevel);
 
@@ -50,136 +310,46 @@ function searchArticles() {
         return levelMatch && themeMatch && (titleMatch || contentMatch);
     });
 
-    currentPage = 1; currentPage = 1; sortAndRenderArticlesByDate(filteredData); createPaginationControls(filteredData, currentPage);
+    currentPage = 1;
+    sortAndRenderArticlesByTitleAndDate(searchResults);
+    createPaginationControls(searchResults.length, currentPage);
 }
 
 document.getElementById("filter-btn").addEventListener("click", searchArticles);
 
-// 隨機選擇報導
 function getRandomArticles(articles, count) {
     const shuffled = [...articles].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, count);
 }
 
-// 按時間排序並渲染報導內容
-function sortAndRenderArticlesByDate(articles) {
-    const sortedArticles = articles.sort((a, b) => new Date(b.Date) - new Date(a.Date));
-    paginateArticles(sortedArticles, currentPage);
-}
-
-// 渲染分頁的報導內容
-function paginateArticles(filteredData, page) {
+function paginateArticles(articles) {
     const container = document.getElementById("articles-container");
-    container.innerHTML = "";  // 清空容器內容
+    container.innerHTML = ""; // 清空現有內容
 
-    const start = (page - 1) * articlesPerPage;
-    const end = start + articlesPerPage;
-    const paginatedData = filteredData.slice(start, end);
+    if (!articles || articles.length === 0) {
+        container.innerHTML = "<p>No articles found.</p>";
+        return;
+    }
 
-    paginatedData.forEach(article => {
+    const totalPages = Math.ceil(articles.length / articlesPerPage);
+
+    if (currentPage > totalPages) {
+        currentPage = totalPages;
+    }
+
+    const startIndex = (currentPage - 1) * articlesPerPage;
+    const endIndex = startIndex + articlesPerPage;
+
+    const paginatedArticles = articles.slice(startIndex, endIndex);
+
+    paginatedArticles.forEach(article => {
         renderArticle(article);
     });
 
-    createPaginationControls(filteredData.length, currentPage);
+    renderPagination(totalPages);
 }
 
-// 渲染單篇報導
-function renderArticle(article) {
-    const container = document.getElementById("articles-container");
 
-    const contentLevels = Object.keys(article.Content)
-        .filter(level => level.includes("level"))
-        .sort((a, b) => parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]));
-
-    const initialLevel = contentLevels[0];
-    const initialLevelNumber = initialLevel.match(/\d+/)[0];
-    const initialContent = article.Content[initialLevel] || "Content not available";
-
-    const themes = article.Themes ? article.Themes.join(", ") : "No Theme";
-
-    const articleElement = document.createElement("div");
-    articleElement.classList.add("article");
-
-    articleElement.innerHTML = `
-        <h2 class="title">${article.Title}</h2>
-        <p class="date"><strong>Date:</strong> ${article.Date}</p>
-        <p class="theme"><strong>Theme:</strong> ${themes}</p>
-        <p class="current-level" id="current-level-${article.Date}">
-            <strong>Current Level:</strong> ${initialLevelNumber}
-        </p>
-        <div class="content">
-            <p id="article-content-${article.Date}" data-current-level="${initialLevel}">
-                ${initialContent}
-            </p>
-        </div>
-        <div class="controls" id="controls-${article.Date}">
-            <div class="level-buttons" id="level-buttons-${article.Date}"></div>
-            <button class="download-btn" data-date="${article.Date}">Download</button>
-        </div>
-    `;
-
-    container.appendChild(articleElement);
-
-    if (contentLevels.length > 1) {
-        const controlsContainer = document.getElementById(`level-buttons-${article.Date}`);
-        contentLevels.forEach(level => {
-            const button = document.createElement("button");
-            const levelNumber = level.match(/\d+/)[0];
-            button.textContent = `Level ${levelNumber}`;
-            button.dataset.date = article.Date;
-            button.dataset.level = level;
-            button.classList.add("level-btn");
-
-            if (level === initialLevel) {
-                button.classList.add("active");
-            }
-            controlsContainer.appendChild(button);
-        });
-    }
-}
-
-// 處理按鈕點擊事件
-document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("level-btn")) {
-        const date = e.target.dataset.date;
-        const level = e.target.dataset.level;
-        const contentId = `article-content-${date}`;
-        const levelDisplayId = `current-level-${date}`;
-        const article = data.find(a => a.Date === date);
-
-        document.getElementById(contentId).innerText = article.Content[level] || "Content not available";
-        document.getElementById(contentId).dataset.currentLevel = level;
-        document.getElementById(levelDisplayId).innerHTML = `<strong>Current Level:</strong> ${level.match(/\d+/)[0]}`;
-
-        const buttons = document.querySelectorAll(`#level-buttons-${date} .level-btn`);
-        buttons.forEach(btn => {
-            btn.classList.toggle("active", btn.dataset.level === level);
-        });
-    }
-
-    if (e.target.classList.contains("download-btn")) {
-        const date = e.target.dataset.date;
-        const article = data.find(a => a.Date === date);
-        const contentId = `article-content-${date}`;
-        const contentElement = document.getElementById(contentId);
-        const currentLevel = contentElement.dataset.currentLevel;
-        const textContent = `
-Date: ${article.Date}
-Title: ${article.Title}
-Theme: ${article.Themes.join(", ")}
-Current Level: ${currentLevel.match(/\d+/)[0]}
-${article.Content[currentLevel] || "Content not available"}
-        `;
-
-        const blob = new Blob([textContent], { type: "text/plain" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `${article.Title.replace(/\s+/g, "_")}.txt`;
-        link.click();
-    }
-});
-
-// 創建頁碼按鈕
 function createPaginationControls(totalArticles, currentPage) {
     const paginationContainer = document.getElementById("pagination-container");
     paginationContainer.innerHTML = "";
@@ -194,10 +364,137 @@ function createPaginationControls(totalArticles, currentPage) {
         }
         pageButton.addEventListener("click", () => {
             currentPage = i;
-            paginateArticles(filteredData, currentPage);
-            paginateArticles(filteredData, currentPage);
+            paginateArticles(searchResults, currentPage);
         });
         paginationContainer.appendChild(pageButton);
     }
     paginationContainer.style.textAlign = "center";
+}
+
+document.getElementById("refresh-link").addEventListener("click", (event) => {
+    event.preventDefault(); // 阻止預設跳轉行為
+    location.reload();      // 重新載入頁面
+});
+
+function loadRating(title, level) {
+    const storedData = JSON.parse(localStorage.getItem("ratings")) || [];
+    const ratingEntry = storedData.find(
+        (item) => item.title === title && item.level === level
+    );
+    return ratingEntry ? ratingEntry.rating : null;
+}
+
+function calculateAverageRatings(ratings) {
+    const aggregatedRatings = {};
+
+    ratings.forEach(({ title, rating }) => {
+        if (!aggregatedRatings[title]) {
+            aggregatedRatings[title] = { total: 0, count: 0 };
+        }
+        aggregatedRatings[title].total += rating;
+        aggregatedRatings[title].count += 1;
+    });
+
+    // 計算平均分數
+    const averageRatings = Object.entries(aggregatedRatings).map(([title, data]) => ({
+        title,
+        averageRating: data.total / data.count,
+    }));
+
+    return averageRatings.sort((a, b) => b.averageRating - a.averageRating);
+}
+
+
+function calculateWeightedScores(ratings, userPreferences) {
+    const weightedScores = {};
+
+    ratings.forEach(({ title, level, themes, rating }) => {
+        let score = rating;
+
+        // 主題加權
+        const matchingThemes = themes.split(", ").filter((theme) =>
+            userPreferences.themes.includes(theme)
+        ).length;
+        score += matchingThemes * 1; // 每個匹配主題 +1 分
+
+        // 等級匹配加權
+        if (userPreferences.levels.includes(level)) {
+            score += 2; // 完全匹配等級 +2 分
+        }
+
+        if (!weightedScores[title]) {
+            weightedScores[title] = { total: 0, count: 0 };
+        }
+
+        weightedScores[title].total += score;
+        weightedScores[title].count += 1;
+    });
+
+    return Object.entries(weightedScores).map(([title, data]) => ({
+        title,
+        weightedScore: data.total / data.count,
+    })).sort((a, b) => b.weightedScore - a.weightedScore);
+}
+
+
+function recommendArticles() {
+    const ratings = loadRatings();
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    if (ratings.length === 0) {
+        console.log("無評分資料，無法推薦報導。");
+        return [];
+    }
+
+    // 取得已評分標題
+    const ratedTitles = ratings.map(rating => rating.title);
+
+    // 取得最近一天內已瀏覽的標題
+    const recentlyViewedTitles = viewingHistory
+        .filter(article => new Date(article.viewedAt) >= oneDayAgo)
+        .map(article => article.Title);
+
+    // 過濾已評分與已瀏覽的報導
+    const filteredArticles = data.filter(article =>
+        !ratedTitles.includes(article.Title) &&
+        !recentlyViewedTitles.includes(article.Title)
+    );
+
+    console.log("推薦報導清單 (已過濾):", filteredArticles);
+    
+    // **補充邏輯：無符合條件的推薦報導時，顯示隨機報導**
+    if (filteredArticles.length === 0) {
+        console.log("無符合條件的推薦報導，顯示隨機報導。");
+        return getRandomArticles(data, 10);
+    }
+
+    // 從過濾後的報導中，隨機選擇最多10則推薦
+    return getRandomArticles(filteredArticles, 10);
+}
+
+
+
+function saveRating(title, level, themes, rating) {
+    const ratingData = {
+        title: title,
+        level: level,
+        themes: themes,
+        rating: rating,
+        date: new Date().toISOString(),
+    };
+
+    let storedData = JSON.parse(localStorage.getItem("ratings")) || [];
+
+    const existingIndex = storedData.findIndex(
+        (item) => item.title === title && item.level === level
+    );
+
+    if (existingIndex !== -1) {
+        storedData[existingIndex] = ratingData;
+    } else {
+        storedData.push(ratingData);
+    }
+
+    localStorage.setItem("ratings", JSON.stringify(storedData));
 }
