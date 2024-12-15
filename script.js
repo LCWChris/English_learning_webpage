@@ -412,73 +412,77 @@ function calculateAverageRatings(ratings) {
 }
 
 
-function calculateWeightedScores(ratings, userPreferences) {
-    const weightedScores = {};
+function calculateWeightedScores(articles, preferredLevels, preferredThemes) {
+    const weightedScores = [];
 
-    ratings.forEach(({ title, level, themes, rating }) => {
-        let score = rating;
+    articles.forEach(article => {
+        const articleThemes = article.Themes || [];  // 確保為陣列
+        const articleLevels = Object.keys(article.Content || {}).filter(level =>
+            level.toLowerCase().includes("level")
+        );
 
-        // 主題加權
-        const matchingThemes = themes.split(", ").filter((theme) =>
-            userPreferences.themes.includes(theme)
+        let score = 0;
+
+        // 計算主題分數
+        const matchingThemes = articleThemes.filter(theme =>
+            preferredThemes.includes(theme.toLowerCase())
         ).length;
-        score += matchingThemes * 1; // 每個匹配主題 +1 分
+        score += matchingThemes;  // 每個匹配主題 +1 分
 
-        // 等級匹配加權
-        if (userPreferences.levels.includes(level)) {
-            score += 2; // 完全匹配等級 +2 分
+        // 計算等級分數
+        if (articleLevels.some(level => preferredLevels.includes(level))) {
+            score += 2;  // 等級匹配 +2 分
         }
 
-        if (!weightedScores[title]) {
-            weightedScores[title] = { total: 0, count: 0 };
-        }
-
-        weightedScores[title].total += score;
-        weightedScores[title].count += 1;
+        weightedScores.push({
+            title: article.Title,
+            score: score,
+        });
     });
 
-    return Object.entries(weightedScores).map(([title, data]) => ({
-        title,
-        weightedScore: data.total / data.count,
-    })).sort((a, b) => b.weightedScore - a.weightedScore);
+    return weightedScores.sort((a, b) => b.score - a.score);
 }
 
 
 function recommendArticles() {
     const ratings = loadRatings();
-    const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    const viewedArticles = loadViewingHistory();
 
-    if (ratings.length === 0) {
-        console.log("無評分資料，無法推薦報導。");
-        return [];
-    }
+    // 檢查用戶是否有偏好
+    const hasPreferences = ratings.length > 0;
 
-    // 取得已評分標題
-    const ratedTitles = ratings.map(rating => rating.title);
+    let preferredLevels = hasPreferences
+        ? ratings.map(rating => rating.level)
+        : ["level0", "level1", "level2", "level3", "level4", "level5", "level6"];
 
-    // 取得最近一天內已瀏覽的標題
-    const recentlyViewedTitles = viewingHistory
-        .filter(article => new Date(article.viewedAt) >= oneDayAgo)
-        .map(article => article.Title);
+    let preferredThemes = hasPreferences
+        ? ratings.flatMap(rating => rating.themes)
+        : ["all"];
 
-    // 過濾已評分與已瀏覽的報導
-    const filteredArticles = data.filter(article =>
-        !ratedTitles.includes(article.Title) &&
-        !recentlyViewedTitles.includes(article.Title)
-    );
+    console.log("用戶偏好等級:", preferredLevels);
+    console.log("用戶偏好主題:", preferredThemes);
 
-    console.log("推薦報導清單 (已過濾):", filteredArticles);
-    
-    // **補充邏輯：無符合條件的推薦報導時，顯示隨機報導**
-    if (filteredArticles.length === 0) {
+    // 過濾掉最近 1 天已瀏覽或已評分的報導
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const filteredArticles = data.filter(article => {
+        const viewed = viewedArticles.some(view => view.title === article.Title && new Date(view.date) > oneDayAgo);
+        const rated = ratings.some(rating => rating.title === article.Title);
+        return !viewed && !rated;
+    });
+
+    // 根據權重進行排序
+    const scoredArticles = calculateWeightedScores(filteredArticles, preferredLevels, preferredThemes);
+    scoredArticles.sort((a, b) => b.score - a.score);
+
+    if (scoredArticles.length === 0) {
         console.log("無符合條件的推薦報導，顯示隨機報導。");
         return getRandomArticles(data, 10);
     }
 
-    // 從過濾後的報導中，隨機選擇最多10則推薦
-    return getRandomArticles(filteredArticles, 10);
+    console.log("推薦的報導:", scoredArticles.slice(0, 10));
+    return scoredArticles.slice(0, 10);
 }
+
 
 
 
