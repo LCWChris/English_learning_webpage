@@ -103,7 +103,7 @@ function renderArticle(article) {
 
     if (!article.Content || Object.keys(article.Content).length === 0) {
         console.warn(`報導 "${article.Title}" 缺少內容`);
-        return;  // 中止渲染
+        return;
     }
 
     const articleElement = document.createElement("div");
@@ -113,12 +113,8 @@ function renderArticle(article) {
         .filter(level => level.toLowerCase().includes("level"))
         .sort((a, b) => parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]));
 
-    console.log(`報導 "${article.Title}" 可用等級:`, contentLevels);
-
     let currentLevel = contentLevels[0];
     const themes = article.Themes ? article.Themes.join(", ") : "No Theme";
-
-    // 處理報導標題作為安全選擇器
     const escapedTitle = article.Title.replace(/[^a-zA-Z0-9]/g, "_");
 
     articleElement.innerHTML = `
@@ -136,59 +132,59 @@ function renderArticle(article) {
     const levelDisplay = articleElement.querySelector(`#current-level-${escapedTitle}`);
     const buttonsContainer = articleElement.querySelector(`#buttons-${escapedTitle}`);
 
-    if (buttonsContainer && contentLevels.length > 0) {
-        console.log(`找到按鈕容器，準備生成等級按鈕:`, contentLevels);
+    // 生成等級按鈕
+    contentLevels.forEach(level => {
+        const levelButton = document.createElement("button");
+        const levelNumber = level.match(/\d+/)[0];
+        levelButton.textContent = `Level ${levelNumber}`;
+        levelButton.classList.add("level-btn");
 
-        contentLevels.forEach(level => {
-            console.log(`正在處理等級: ${level} - 報導標題: ${article.Title}`);
+        levelButton.addEventListener("click", () => {
+            const selectedContent = article.Content[level] || "Content not available";
+            contentContainer.innerHTML = `<p>${selectedContent}</p>`;
+            levelDisplay.innerHTML = `<strong>Current Level:</strong> ${levelNumber}`;
+            currentLevel = level;
 
-            const levelButton = document.createElement("button");
-            const levelNumber = level.match(/\d+/)[0];
-            levelButton.textContent = `Level ${levelNumber}`;
-            levelButton.classList.add("level-btn");
+            // 根據 localStorage 更新星級
+            const selectedRating = loadRating(article.Title, currentLevel) || 0;
+            updateStars(ratingContainer, selectedRating);
 
-            levelButton.addEventListener("click", () => {
-                const selectedContent = article.Content[level] || "Content not available";
-                contentContainer.innerHTML = `<p>${selectedContent}</p>`;
-                levelDisplay.innerHTML = `<strong>Current Level:</strong> ${levelNumber}`;
-                currentLevel = level;
-            });
-
-            buttonsContainer.appendChild(levelButton);
-            console.log(`已附加按鈕: ${levelButton.textContent}`);
+            ratingResult.textContent = selectedRating > 0
+                ? `You rated: ${selectedRating} stars.`
+                : "No rating yet.";
         });
 
-        // 添加下載按鈕
-        const downloadButton = document.createElement("button");
-        downloadButton.textContent = "Download";
-        downloadButton.classList.add("download-btn");
-        downloadButton.id = `download-${escapedTitle}`;
+        buttonsContainer.appendChild(levelButton);
+    });
 
-        downloadButton.addEventListener("click", () => {
-            const currentContent = article.Content[currentLevel] || "Content not available";
-            const txtContent = `
+    // 添加下載按鈕
+    const downloadButton = document.createElement("button");
+    downloadButton.textContent = "Download";
+    downloadButton.classList.add("download-btn");
+    downloadButton.id = `download-${escapedTitle}`;
+
+    downloadButton.addEventListener("click", () => {
+        const currentContent = article.Content[currentLevel] || "Content not available";
+        const txtContent = `
 Title: ${article.Title}
 Date: ${article.Date}
 Theme: ${themes}
 Current Level: ${currentLevel.match(/\d+/)[0]}
 Content:
 ${currentContent}
-            `.trim();
+        `.trim();
 
-            // 建立 Blob 物件並觸發下載
-            const blob = new Blob([txtContent], { type: "text/plain" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `${article.Title.replace(/[^a-zA-Z0-9]/g, "_")}_Level${currentLevel.match(/\d+/)[0]}.txt`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
+        // 建立 Blob 物件並觸發下載
+        const blob = new Blob([txtContent], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${article.Title.replace(/[^a-zA-Z0-9]/g, "_")}_Level${currentLevel.match(/\d+/)[0]}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
 
-        buttonsContainer.appendChild(downloadButton);
-    } else {
-        console.warn(`報導 "${article.Title}" 沒有等級內容或按鈕容器未找到`);
-    }
+    buttonsContainer.appendChild(downloadButton);
 
     // 星級評分區域
     const ratingContainer = document.createElement("div");
@@ -209,7 +205,7 @@ ${currentContent}
 
         star.addEventListener("click", () => {
             selectedRating = i;
-            updateStars();
+            updateStars(ratingContainer, selectedRating);
             ratingResult.textContent = `You rated: ${i} stars.`;
             saveRating(article.Title, currentLevel, themes, i);
         });
@@ -217,19 +213,12 @@ ${currentContent}
         ratingContainer.appendChild(star);
     }
 
-    function updateStars() {
-        const allStars = ratingContainer.querySelectorAll(".star");
-        allStars.forEach((star) => {
-            const value = parseInt(star.dataset.value, 10);
-            star.style.color = value <= selectedRating ? "gold" : "gray";
-        });
-    }
-
-    updateStars();
+    updateStars(ratingContainer, selectedRating);
     buttonsContainer.after(ratingContainer);
     container.appendChild(articleElement);
     addToViewingHistory(article);
 }
+
 
 
 
@@ -519,6 +508,7 @@ function saveRating(title, level, themes, rating) {
     localStorage.setItem("ratings", JSON.stringify(storedData));
     console.log("目前儲存的評分資料：", storedData);
 }
+
 
 
 function updateStars(ratingContainer, selectedRating) {
